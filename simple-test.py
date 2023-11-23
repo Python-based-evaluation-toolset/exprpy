@@ -6,8 +6,15 @@ import socket
 import signal
 
 
-def main_test(sock):
-    sock.sendall(b"Hello World")
+def client_send(mock_sock, msg):
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        client.connect(mock_sock)
+        client.sendall(msg)
+    except Exception as e:
+        print(f"Error to open connection to controller: {e}")
+    finally:
+        client.close()
 
 
 if __name__ == "__main__":
@@ -30,15 +37,11 @@ if __name__ == "__main__":
     else:
         time.sleep(1)  # wait for controller
 
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    try:
-        client.connect(mock_sock)
-        main_test(client)
-    except Exception as e:
-        print(f"Error to open connection to controller: {e}")
-        os.kill(pid, signal.SIGKILL)
-    finally:
-        client.close()
+    print("[DEMO] Command: TEST loop-20.py")
+    client_send(mock_sock, b"TEST loop-20.py")
+    time.sleep(2)
+    print("[DEMO] Command: STOP CONTROLLER")
+    client_send(mock_sock, b"STOP CONTROLLER")
 
     # Wait for controller to die
     os.wait()

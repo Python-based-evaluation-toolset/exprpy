@@ -43,16 +43,26 @@ class Controller:
     def __exec(self, cmd):
         subprocess.run(cmd, shell=True)
 
-    def test_spawn(self, cmd):
-        self.__exec(f"{self.test_home}/{cmd}")
+    def test_spawn(self, cmd, args=""):
+        self.__exec(f"{self.test_home}/{cmd} {args}")
 
-    def monitor_spawn(self, cmd):
-        self.__exec(f"{self.monitor_home}/{cmd}")
+    def monitor_spawn(self, cmd, args=""):
+        self.__exec(f"{self.monitor_home}/{cmd} {args}")
 
-    def env_spawn(self, cmd):
-        self.__exec(f"{self.env_home}/{cmd}")
+    def env_spawn(self, cmd, args=""):
+        self.__exec(f"{self.env_home}/{cmd} {args}")
 
     def server_run(self):
         while self.server.conn_wait():
-            data = self.server.raw_get_close()
-            print(f"[DEMO] raw: {data}")
+            type, cmd, args = self.server.command_get_close()
+            if type == "TEST":
+                self.test_spawn(cmd, args)
+            elif type == "MONITOR":
+                self.monitor_spawn(cmd, args)
+            elif type == "ENV":
+                self.env_spawn(cmd, args)
+            elif type == "STOP" and cmd == "CONTROLLER":
+                self.sock.close()
+                break
+            else:
+                print(f"Error: type({type}) is not recognized")

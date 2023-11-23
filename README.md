@@ -37,4 +37,7 @@ The communication prompt is straightforward:
 # Example
 TEST loop-20.py
 MONITOR monitor.py --pid {PID}
+
+# Special command to stop controller server
+STOP CONTROLLER
 ```
