@@ -16,3 +16,9 @@ but only try to minimize our learning curve
 while trying to improve the usage through time if necessary.
 By philosophy, the universal and usability is forbidden
 while friendly, simplicity and scalability are our ally.
+
+Project target is simply delivered in two steps:
+Firstly, the designer define list of objects relating to predefined factors.
+The controller receive user policy,
+combine all designed object and deliver result to expected output directory.
+For simplicity, the expected outcome of an experience is single text file.
