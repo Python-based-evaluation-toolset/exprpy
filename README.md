@@ -22,3 +22,19 @@ Firstly, the designer define list of objects relating to predefined factors.
 The controller receive user policy,
 combine all designed object and deliver result to expected output directory.
 For simplicity, the expected outcome of an experience is single text file.
+
+## Controller communication
+
+The controller is designed to communicate through UNIX socket.
+The user drive controller through UNIX socket interface
+which allows not only human but also test program to control itself.
+
+The communication prompt is straightforward:
+```
+# Prompt:
+[OBJECT TYPE] [OBJECT NAME] [OBJECT PARAMETERS]
+
+# Example
+TEST loop-20.py
+MONITOR monitor.py --pid {PID}
+```
