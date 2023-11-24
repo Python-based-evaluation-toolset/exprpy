@@ -3,7 +3,7 @@
 Lacking of a good experience strategy is main difficult to our evaluation.
 It is also cost time to learn new experience framework on market.
 Therefore, we intend to design a minimum framework to measure our evaluation.
-It is mostly based on our hasty design in Toulouse (our master intern project)
+It is mostly based on our hasty design in IRIT Toulouse (our master intern project)
 surrounding by four factors:
 
 1. Tester: configure and execute test case from clean environment.
