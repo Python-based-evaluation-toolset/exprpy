@@ -34,6 +34,11 @@ if __name__ == "__main__":
     client.log_set(mock_result)
     client.log_append_set(True)
 
+    print("#----- ENV CLEAN -----#")
+    print("[DEMO] Command: ENV env.py")
+    client.env("env.py", {})
+    time.sleep(1)
+
     print("#----- SIMPLE TEST -----#")
     print("[DEMO] Command: TEST loop-20.py")
     client.test("loop-20.py", {})
