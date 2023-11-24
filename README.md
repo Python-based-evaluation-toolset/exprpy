@@ -44,6 +44,31 @@ STOP CONTROLLER
 # Special command to control IO flow
 ## Set result path
 IO PATH {path}
+
 ## Set IO action
 IO APPEND [True | False]
 ```
+
+## Log driven
+
+Driving test flow based on the event log is difficult but necessary.
+For example, in sequence of test,
+there is the test work specifically
+after a state of other test.
+Then the controller need to read previous test log
+before deciding to fire up next test.
+We call these case a log driven sequence.
+
+To support this scenario,
+we introduce pub/sub model
+to distribute log data to multiple subscribes.
+
+For performance, we propose some constraints on our design.
+Subscribers are predefined before controller activate.
+This is real time model without queue captured.
+Subscriber work in side controller process
+and communicate to controller through method call.
+Subscriber contains special method
+allowing controller to send log message in text format.
+External subscriber work through IPC is extended from base subscriber
+and should not be responsible of this work.
