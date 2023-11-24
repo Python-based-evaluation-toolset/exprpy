@@ -1,7 +1,8 @@
 from .unix_server import UnixServer
-import subprocess
 import socket
+import subprocess
 import os
+import sys
 
 
 class Controller:
@@ -41,7 +42,13 @@ class Controller:
             raise e
 
     def __exec(self, cmd):
-        subprocess.run(cmd, shell=True)
+        pid = os.fork()
+        if pid < 0:
+            raise Exception("Could not fork to execute cmd in Controller.")
+        elif pid == 0:
+            self.sock.close()
+            subprocess.run(cmd, shell=True)
+            sys.exit()
 
     def test_spawn(self, cmd, args=""):
         self.__exec(f"{self.test_home}/{cmd} {args}")

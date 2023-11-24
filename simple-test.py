@@ -37,9 +37,15 @@ if __name__ == "__main__":
     else:
         time.sleep(1)  # wait for controller
 
+    print("#----- SIMPLE TEST -----#")
     print("[DEMO] Command: TEST loop-20.py")
     client_send(mock_sock, b"TEST loop-20.py")
-    time.sleep(2)
+    time.sleep(3)
+
+    print("#----- SELF-AWARE TEST -----#")
+    client_send(mock_sock, b"TEST loop-10-self-monitor.py")
+    time.sleep(6)
+
     print("[DEMO] Command: STOP CONTROLLER")
     client_send(mock_sock, b"STOP CONTROLLER")
 
