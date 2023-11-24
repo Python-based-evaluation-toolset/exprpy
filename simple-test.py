@@ -1,30 +1,25 @@
 from lib.controller import Controller
+from lib.inout import IO
 import os
 import time
 import sys
 import socket
 import signal
 
-
-def client_send(mock_sock, msg):
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    try:
-        client.connect(mock_sock)
-        client.sendall(msg)
-    except Exception as e:
-        print(f"Error to open connection to controller: {e}")
-    finally:
-        client.close()
-
-
 if __name__ == "__main__":
     mock_sock = "/tmp/hieplnc"
+    mock_result = "mock-result.txt"
     mock_arg = {
         "sock_path": mock_sock,
         "test_path": "./test",
         "monitor_path": "./test",
         "env_path": "./test",
     }
+
+    # client interface
+    client = IO(mock_sock)
+    client.output_set(mock_result)
+    client.log_append_set(True)
 
     # child - controller process
     pid = os.fork()
@@ -39,15 +34,15 @@ if __name__ == "__main__":
 
     print("#----- SIMPLE TEST -----#")
     print("[DEMO] Command: TEST loop-20.py")
-    client_send(mock_sock, b"TEST loop-20.py")
+    client.test("loop-20.py", {})
     time.sleep(3)
 
     print("#----- SELF-AWARE TEST -----#")
-    client_send(mock_sock, b"TEST loop-10-self-monitor.py")
+    client.test("loop-10-self-monitor.py", {})
     time.sleep(6)
 
     print("[DEMO] Command: STOP CONTROLLER")
-    client_send(mock_sock, b"STOP CONTROLLER")
+    client.stop()
 
     # Wait for controller to die
     os.wait()
