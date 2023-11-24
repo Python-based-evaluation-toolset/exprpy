@@ -72,3 +72,7 @@ Subscriber contains special method
 allowing controller to send log message in text format.
 External subscriber work through IPC is extended from base subscriber
 and should not be responsible of this work.
+
+***NOTE*** in mechanism, the controller spawn child process to execute test
+and the child is responsible to send message to all subscribers
+but not controller process itself.
