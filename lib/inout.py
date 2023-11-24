@@ -11,13 +11,9 @@ class IO:
     """
 
     def __init__(self, sock_path: str):
-        self.output = None
-        self.log_append = ""
         self.sock_path = sock_path
 
     def __send(self, msg):
-        if self.output is not None and not msg.startswith("STOP"):
-            msg = f"{msg} 2>&1 | tee {self.log_append} {self.output}"
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             client.connect(self.sock_path)
@@ -31,11 +27,11 @@ class IO:
         args_str = " ".join([f"--{k} {v}" for k, v in args.items()])
         return f"{type.upper()} {name} {args_str}"
 
-    def output_set(self, path):
-        self.output = path
+    def log_set(self, path):
+        self.__send(f"IO PATH {path}")
 
     def log_append_set(self, boolean: bool):
-        self.log_append = "-a" if boolean else ""
+        self.__send(f"IO APPEND {boolean}")
 
     def test(self, name, args: dict):
         self.__send(self.__cmd_build("TEST", name, args))

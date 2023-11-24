@@ -18,8 +18,6 @@ if __name__ == "__main__":
 
     # client interface
     client = IO(mock_sock)
-    client.output_set(mock_result)
-    client.log_append_set(True)
 
     # child - controller process
     pid = os.fork()
@@ -31,6 +29,10 @@ if __name__ == "__main__":
         sys.exit()
     else:
         time.sleep(1)  # wait for controller
+
+    # log configuration
+    client.log_set(mock_result)
+    client.log_append_set(True)
 
     print("#----- SIMPLE TEST -----#")
     print("[DEMO] Command: TEST loop-20.py")

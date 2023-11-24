@@ -40,4 +40,10 @@ MONITOR monitor.py --pid {PID}
 
 # Special command to stop controller server
 STOP CONTROLLER
+
+# Special command to control IO flow
+## Set result path
+IO PATH {path}
+## Set IO action
+IO APPEND [True | False]
 ```
