@@ -1,6 +1,3 @@
-import threading
-
-
 class Subscriber:
     """
     Base subscriber object to communicate
