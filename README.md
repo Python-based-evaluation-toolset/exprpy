@@ -76,3 +76,15 @@ and should not be responsible of this work.
 ***NOTE*** in mechanism, the controller spawn child process to execute test
 and the child is responsible to send message to all subscribers
 but not controller process itself.
+
+## Test flow controlling methodology
+
+There are two ways to drive the test flow:
+
+**Method 1:** The developer design an active flow controller
+as a log subscriber in controller
+and eventually spawn test according to log output.
+
+**Method 2:** The developer design a passive flow controller
+as a commandline tool which is called by test-case program.
+The tool, based on test-case input arguments, decides next step action.
