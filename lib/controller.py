@@ -1,4 +1,5 @@
 from .unix_server import UnixServer
+from .pubsub import Subscriber, FileSubscriber
 import socket
 import subprocess
 import os
@@ -24,8 +25,8 @@ class Controller:
         self.env_home = env_path
 
         # IO flow
-        self.log_path = None
-        self.log_append = ""
+        self.file = None
+        self.subscribers = []
 
         # unix socket generation
         try:
@@ -47,10 +48,10 @@ class Controller:
             raise e
 
     def __cmd_build(self, cmd):
-        if self.log_path is not None and len(self.log_path) > 0:
-            return f"{cmd} 2>&1 | tee {self.log_append} {self.log_path}"
-        else:
-            return cmd
+        """
+        Preserve method to append extra modification if needed.
+        """
+        return cmd
 
     def __exec(self, cmd):
         pid = os.fork()
@@ -58,7 +59,17 @@ class Controller:
             raise Exception("Could not fork to execute cmd in Controller.")
         elif pid == 0:
             self.sock.close()
-            subprocess.run(self.__cmd_build(cmd), shell=True)
+            p = subprocess.Popen(
+                self.__cmd_build(cmd),
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            )
+            for line in iter(p.stdout.readline, b""):
+                # TODO: current subscriber inform mechanism is slow.
+                for sub in self.subscribers:
+                    sub.recv(line.decode())
+            self.subscribers.clear()
             sys.exit()
 
     def test_spawn(self, cmd, args=""):
@@ -70,6 +81,9 @@ class Controller:
     def env_spawn(self, cmd, args=""):
         self.__exec(f"{self.env_home}/{cmd} {args}")
 
+    def subscriber_add(self, sub: Subscriber):
+        self.subscribers.append(sub)
+
     def server_run(self):
         while self.server.conn_wait():
             type, cmd, args = self.server.command_get_close()
@@ -80,12 +94,15 @@ class Controller:
             elif type == "ENV":
                 self.env_spawn(cmd, args)
             elif type == "IO":
+                if self.file is None:
+                    self.file = FileSubscriber()
+                    self.subscribers.append(self.file)
                 if cmd == "PATH":
-                    self.log_path = args
+                    self.file.log_set(args)
                 elif cmd == "APPEND":
-                    self.log_append = "-a" if bool(args) else ""
+                    self.file.log_append(bool(args))
                 else:
-                    raise Exception(f"IO command is wrong: {cmd} {args}")
+                    raise Exception(f"IO command is invalid: {cmd} {args}")
             elif type == "STOP" and cmd == "CONTROLLER":
                 self.sock.close()
                 break
