@@ -24,7 +24,13 @@ class IO:
             client.close()
 
     def __cmd_build(self, type, name, args: dict):
-        args_str = " ".join([f"--{k} {v}" for k, v in args.items()])
+        args_str = ""
+        for k, v in args.items():
+            if isinstance(v, list):
+                for sub_v in v:
+                    args_str += f" --{k} '{v}'"
+            else:
+                args_str += f" --{k} '{v}'"
         return f"{type.upper()} {name} {args_str}"
 
     def log_set(self, path):
