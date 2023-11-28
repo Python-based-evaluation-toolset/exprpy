@@ -28,7 +28,7 @@ class IO:
         for k, v in args.items():
             if isinstance(v, list):
                 for sub_v in v:
-                    args_str += f" --{k} '{v}'"
+                    args_str += f" --{k} '{sub_v}'"
             else:
                 args_str += f" --{k} '{v}'"
         return f"{type.upper()} {name} {args_str}"
