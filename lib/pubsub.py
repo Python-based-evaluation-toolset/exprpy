@@ -40,6 +40,9 @@ class FileSubscriber(Subscriber):
         self.append = boolean
 
     def recv(self, msg: str):
+        # Disable log if path is invalid
+        if self.path is None or self.path == "":
+            return
         if self.log is None:
             self.__open_log()
         self.log.write(msg)
