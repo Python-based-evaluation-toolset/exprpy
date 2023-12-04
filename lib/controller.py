@@ -3,6 +3,8 @@ from .pubsub import Subscriber, FileSubscriber
 import socket
 import os
 import sys
+import threading
+import time
 
 
 class Controller:
@@ -57,6 +59,15 @@ class Controller:
         if pid < 0:
             raise Exception("Could not fork to execute cmd in Controller.")
         elif pid == 0:
+            # watchdog for hanging child process
+            def timer_func(counter: dict):
+                while not counter["stop"]:
+                    while counter["count"] < 5:
+                        time.sleep(1)
+                        counter["count"] += 1
+                    os.write(counter["fd"], b"controller ping\n")
+                    counter["count"] = 0
+
             self.sock.close()
             pipe_read, pipe_write = os.pipe()
             pid = os.fork()
@@ -68,11 +79,17 @@ class Controller:
                 os.close(pipe_read)
                 os.close(pipe_write)
                 sys.exit()
+            counter = {"count": 0, "fd": pipe_write, "stop": 0}
+            timer = threading.Thread(target=timer_func, args=(counter,))
+            timer.start()
             with os.fdopen(pipe_read, "r") as reader:
                 for line in iter(reader.readline, b""):
+                    # Reset watchdog
+                    counter["count"] = 0
                     # TODO: current subscriber inform mechanism is slow.
                     for sub in self.subscribers:
                         sub.recv(line)
+            counter["stop"] = 1
             os.waitpid()
             os.close(pipe_read)
             os.close(pipe_write)
