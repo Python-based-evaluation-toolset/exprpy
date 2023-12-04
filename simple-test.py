@@ -48,6 +48,10 @@ if __name__ == "__main__":
     client.test("loop-10-self-monitor.py", {})
     time.sleep(6)
 
+    print("#----- HANG TEST -----#")
+    client.test("hang.py", {})
+    time.sleep(7)
+
     print("[DEMO] Command: STOP CONTROLLER")
     client.stop()
 
