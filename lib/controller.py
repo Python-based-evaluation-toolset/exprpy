@@ -1,7 +1,6 @@
 from .unix_server import UnixServer
 from .pubsub import Subscriber, FileSubscriber
 import socket
-import subprocess
 import os
 import sys
 
@@ -59,16 +58,24 @@ class Controller:
             raise Exception("Could not fork to execute cmd in Controller.")
         elif pid == 0:
             self.sock.close()
-            p = subprocess.Popen(
-                self.__cmd_build(cmd),
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            for line in iter(p.stdout.readline, b""):
-                # TODO: current subscriber inform mechanism is slow.
-                for sub in self.subscribers:
-                    sub.recv(line.decode())
+            pipe_read, pipe_write = os.pipe()
+            pid = os.fork()
+            if pid == 0:
+                os.dup2(pipe_read, 0)
+                os.dup2(pipe_write, 1)
+                os.dup2(pipe_write, 2)
+                os.system(self.__cmd_build(cmd))
+                os.close(pipe_read)
+                os.close(pipe_write)
+                sys.exit()
+            with os.fdopen(pipe_read, "r") as reader:
+                for line in iter(reader.readline, b""):
+                    # TODO: current subscriber inform mechanism is slow.
+                    for sub in self.subscribers:
+                        sub.recv(line)
+            os.waitpid()
+            os.close(pipe_read)
+            os.close(pipe_write)
             self.subscribers.clear()
             sys.exit()
 
