@@ -42,18 +42,11 @@ if __name__ == "__main__":
     print("#----- SIMPLE TEST -----#")
     print("[DEMO] Command: TEST loop-20.py")
     client.test("loop-20.py", {})
-    time.sleep(3)
+    time.sleep(10)
 
     print("#----- SELF-AWARE TEST -----#")
     client.test("loop-10-self-monitor.py", {})
-    time.sleep(6)
-
-    print("#----- HANG TEST -----#")
-    client.test("hang.py", {})
-    time.sleep(7)
+    time.sleep(10)
 
     print("[DEMO] Command: STOP CONTROLLER")
     client.stop()
-
-    # Wait for controller to die
-    os.wait()
