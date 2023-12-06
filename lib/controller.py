@@ -63,38 +63,27 @@ class Controller:
 
     def __exec_child(self, cmd):
         self.sock.close()
-        pipe_read, pipe_write = os.pipe()
-        pid = os.fork()
+        pid, fd = os.forkpty()
         if pid == 0:
-            os.dup2(pipe_read, 0)
-            os.dup2(pipe_write, 1)
-            os.dup2(pipe_write, 2)
-            os.close(pipe_read)
-            os.close(pipe_write)
             cmd = self.__cmd_build(cmd)
             os.execvp(cmd[0], cmd)
 
-        with os.fdopen(pipe_read, "r") as reader:
-            os.set_blocking(pipe_read, False)
-            while True:
-                readable, writable, exceptional = select.select(
-                    [pipe_read], [], [pipe_read], 3
-                )
-                if pipe_read in readable or pipe_read in exceptional:
-                    data = reader.read()
+        # os.set_blocking(fd, False)
+        while True:
+            try:
+                readable, writable, exceptional = select.select([fd], [], [fd], 3)
+                if fd in readable or fd in exceptional:
+                    data = os.read(fd, 1024).decode()
                     # TODO: current subscriber inform mechanism is slow.
                     for sub in self.subscribers:
                         sub.recv(data)
                 else:
-                    try:
-                        # valid fork child still run
-                        ret = os.waitpid(pid, os.WNOHANG)
-                        time.sleep(0.1)  # wait for signal deliver
-                    except Exception as e:
-                        break
+                    # valid fork child still run
+                    ret = os.waitpid(pid, os.WNOHANG)
+                    time.sleep(0.1)  # wait for signal deliver
+            except Exception as e:
+                break
 
-        self.__exception_ignore(os.close, pipe_read)
-        self.__exception_ignore(os.close, pipe_write)
         self.subscribers.clear()
         sys.exit()
 
